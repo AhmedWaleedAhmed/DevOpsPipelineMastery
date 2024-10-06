@@ -5,13 +5,13 @@ all:
         k8s_master:
           hosts:
             master:
-              ansible_host: 3.121.219.127
+              ansible_host: 
         k8s_workers:
           hosts:
             worker1:
-              ansible_host: 3.68.214.89
+              ansible_host: 
             worker2:
-              ansible_host: 18.159.129.146
+              ansible_host: 
 
     # sonarqube:
     #   hosts:

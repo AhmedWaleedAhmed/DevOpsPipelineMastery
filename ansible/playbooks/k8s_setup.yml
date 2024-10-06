@@ -177,6 +177,24 @@
       command: kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v0.49.0/deploy/static/provider/baremetal/deploy.yaml
       become: true
 
+    - name: Download kubeaudit tarball
+      get_url:
+        url: https://github.com/Shopify/kubeaudit/releases/download/v0.22.2/kubeaudit_0.22.2_linux_amd64.tar.gz
+        dest: /tmp/kubeaudit.tar.gz
+        mode: '0644'
+      become: true
+
+    - name: Extract kubeaudit binary
+      unarchive:
+        src: /tmp/kubeaudit.tar.gz
+        dest: /tmp/
+        remote_src: yes  # Indicate that the source file is already on the remote host
+      become: true
+
+    - name: Move kubeaudit binary to /usr/local/bin
+      command: mv /tmp/kubeaudit /usr/local/bin/kubeaudit
+      become: true
+
     - name: Get the join command for worker nodes
       command: kubeadm token create --print-join-command
       register: join_command

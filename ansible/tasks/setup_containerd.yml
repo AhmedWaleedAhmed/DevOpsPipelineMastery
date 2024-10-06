@@ -6,6 +6,7 @@
       - software-properties-common
       - apt-transport-https
       - ca-certificates
+      - tar
     state: present
     update_cache: yes
   become: true
