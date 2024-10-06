@@ -1,0 +1,4 @@
+1- Create the infrastructure using terraform by running `terraform apply`. (We will create the root user here too)
+2- use the ansible playbook to set-up the servers in the inventory.
+    * ansible-playbook -i inventory.yml create_swap.yml
+    * 

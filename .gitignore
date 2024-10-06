@@ -1,0 +1,4 @@
+*.pdf
+terraform/*
+!terraform/main.tf
+*.mp4

@@ -1,0 +1,27 @@
+all:
+  children:
+    k8s_cluster:
+      children:
+        k8s_master:
+          hosts:
+            master:
+              ansible_host: 3.121.219.127
+        k8s_workers:
+          hosts:
+            worker1:
+              ansible_host: 3.68.214.89
+            worker2:
+              ansible_host: 18.159.129.146
+
+    # sonarqube:
+    #   hosts:
+    #     sonarqube:
+    #       ansible_host: <SONARQUBE_PUBLIC_IP>
+    # nexus:
+    #   hosts:
+    #     nexus:
+    #       ansible_host: <NEXUS_PUBLIC_IP>
+    # jenkins:
+    #   hosts:
+    #     jenkins:
+    #       ansible_host: <JENKINS_PUBLIC_IP>
