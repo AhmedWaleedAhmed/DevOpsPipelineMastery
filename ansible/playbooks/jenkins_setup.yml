@@ -1,0 +1,78 @@
+
+# https://linuxcapable.com/how-to-install-openjdk-17-on-ubuntu-linux/
+# https://www.jenkins.io/doc/book/installing/linux/#debianubuntu
+# ansible-playbook -i inventory.yml playbooks/jenkins_setup.yml
+---
+- hosts: jenkins
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+  user: root
+  gather_facts: yes
+  tasks:
+
+    - include_tasks: ../tasks/init.yml
+
+    - set_fact: ansible_user=dev # switch to dev user.
+
+    - name: Update package list
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+      become: true
+
+    - name: Search for openjdk-17 packages
+      command: apt-cache search openjdk | grep openjdk-17
+      register: openjdk_search_result
+      ignore_errors: yes  # Optional, in case you want to continue if no results are found
+      become: true
+
+    - name: Show search result for openjdk-17
+      debug:
+        var: openjdk_search_result.stdout_lines
+      become: true
+
+    - name: Install openjdk-17-jre
+      apt:
+        name: openjdk-17-jre
+        state: present
+      become: true
+
+    - name: Install openjdk-17-jdk
+      apt:
+        name: openjdk-17-jdk
+        state: present
+      become: true
+
+    - name: Download Jenkins GPG key
+      get_url:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        dest: /usr/share/keyrings/jenkins-keyring.asc
+        mode: '0644'
+      become: true
+
+    - name: Add Jenkins repository to sources list
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/"
+        filename: 'jenkins'
+        state: present
+      become: true
+
+    - name: Update APT cache
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+      become: true
+
+    - include_tasks: ../tasks/setup_docker.yml
+
+    - include_tasks: ../tasks/setup_trivy.yml
+    

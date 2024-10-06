@@ -12,16 +12,15 @@ all:
               ansible_host: 
             worker2:
               ansible_host: 
-
-    # sonarqube:
-    #   hosts:
-    #     sonarqube:
-    #       ansible_host: <SONARQUBE_PUBLIC_IP>
-    # nexus:
-    #   hosts:
-    #     nexus:
-    #       ansible_host: <NEXUS_PUBLIC_IP>
-    # jenkins:
-    #   hosts:
-    #     jenkins:
-    #       ansible_host: <JENKINS_PUBLIC_IP>
+    sonarqube:
+      hosts:
+        sonarqube:
+          ansible_host: 
+    nexus:
+      hosts:
+        nexus:
+          ansible_host: 
+    jenkins:
+      hosts:
+        jenkins:
+          ansible_host: 

@@ -1,0 +1,24 @@
+# ansible-playbook -i inventory.yml playbooks/sonarqube_setup.yml
+---
+- hosts: sonarqube
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+  user: root
+  gather_facts: yes
+  tasks:
+
+    - include_tasks: ../tasks/init.yml
+
+    - set_fact: ansible_user=dev # switch to dev user.
+
+    - include_tasks: ../tasks/setup_docker.yml
+
+    - name: Run SonarQube container
+      docker_container:
+        name: sonar
+        image: sonarqube:lts-community
+        state: started
+        recreate: yes
+        ports:
+          - "9000:9000"
+        detach: yes

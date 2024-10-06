@@ -127,83 +127,83 @@ resource "aws_security_group" "waleed_security_group" {
   }
 }
 
-# resource "aws_instance" "jenkins" {
-#   ami           = "ami-0745b7d4092315796"
-#   instance_type = "t2.large"
-#   key_name      = "ahmedwaleed"
-#   subnet_id     = aws_subnet.waleed_subnet.id
-#   vpc_security_group_ids = [aws_security_group.waleed_security_group.id]
-# 	root_block_device {
-# 		delete_on_termination = true
-# 		encrypted             = false
-# 		kms_key_id            = null
-# 		tags                  = {}
-# 		tags_all              = {}
-# 		throughput            = 0
-# 		volume_size           = 30
-# 		volume_type           = "gp2"
-# 	}
-#   tags = {
-#     Name = "waleed-jenkins"
-#   }
-#   user_data = <<-EOF
-#     #!/bin/bash
-#     sudo cp /home/ubuntu/.ssh/authorized_keys /root/.ssh/authorized_keys
-#     deluser --remove-home ubuntu
-#     EOF
-# }
+resource "aws_instance" "jenkins" {
+  ami           = "ami-0745b7d4092315796"
+  instance_type = "t2.large"
+  key_name      = "ahmedwaleed"
+  subnet_id     = aws_subnet.waleed_subnet.id
+  vpc_security_group_ids = [aws_security_group.waleed_security_group.id]
+	root_block_device {
+		delete_on_termination = true
+		encrypted             = false
+		kms_key_id            = null
+		tags                  = {}
+		tags_all              = {}
+		throughput            = 0
+		volume_size           = 30
+		volume_type           = "gp2"
+	}
+  tags = {
+    Name = "waleed-jenkins"
+  }
+  user_data = <<-EOF
+    #!/bin/bash
+    sudo cp /home/ubuntu/.ssh/authorized_keys /root/.ssh/authorized_keys
+    deluser --remove-home ubuntu
+    EOF
+}
 
-# resource "aws_instance" "nexus" {
-#   ami           = "ami-0745b7d4092315796"
-#   instance_type = "t2.medium"
-#   key_name      = "ahmedwaleed"
-#   subnet_id     = aws_subnet.waleed_subnet.id
-#   vpc_security_group_ids = [aws_security_group.waleed_security_group.id]
-# 	root_block_device {
-# 		delete_on_termination = true
-# 		encrypted             = false
-# 		kms_key_id            = null
-# 		tags                  = {}
-# 		tags_all              = {}
-# 		throughput            = 0
-# 		volume_size           = 25
-# 		volume_type           = "gp2"
-# 	}
-#   tags = {
-#     Name = "waleed-nexus"
-#   }
-#   user_data = <<-EOF
-#     #!/bin/bash
-#     sudo cp /home/ubuntu/.ssh/authorized_keys /root/.ssh/authorized_keys
-#     deluser --remove-home ubuntu
-#     EOF
-# }
+resource "aws_instance" "nexus" {
+  ami           = "ami-0745b7d4092315796"
+  instance_type = "t2.medium"
+  key_name      = "ahmedwaleed"
+  subnet_id     = aws_subnet.waleed_subnet.id
+  vpc_security_group_ids = [aws_security_group.waleed_security_group.id]
+	root_block_device {
+		delete_on_termination = true
+		encrypted             = false
+		kms_key_id            = null
+		tags                  = {}
+		tags_all              = {}
+		throughput            = 0
+		volume_size           = 25
+		volume_type           = "gp2"
+	}
+  tags = {
+    Name = "waleed-nexus"
+  }
+  user_data = <<-EOF
+    #!/bin/bash
+    sudo cp /home/ubuntu/.ssh/authorized_keys /root/.ssh/authorized_keys
+    deluser --remove-home ubuntu
+    EOF
+}
 
-# resource "aws_instance" "sonarQube" {
-#   ami           = "ami-0745b7d4092315796"
-#   instance_type = "t2.medium"
-#   key_name      = "ahmedwaleed"
-#   subnet_id     = aws_subnet.waleed_subnet.id
-#   vpc_security_group_ids = [aws_security_group.waleed_security_group.id]
-# 	root_block_device {
-# 		delete_on_termination = true
-# 		encrypted             = false
-# 		kms_key_id            = null
-# 		tags                  = {}
-# 		tags_all              = {}
-# 		throughput            = 0
-# 		volume_size           = 25
-# 		volume_type           = "gp2"
-# 	}
-#   tags = {
-#     Name = "waleed-sonarQube"
-#   }
-#   user_data = <<-EOF
-#     #!/bin/bash
-#     sudo cp /home/ubuntu/.ssh/authorized_keys /root/.ssh/authorized_keys
-#     deluser --remove-home ubuntu
-#     EOF
-# }
+resource "aws_instance" "sonarQube" {
+  ami           = "ami-0745b7d4092315796"
+  instance_type = "t2.medium"
+  key_name      = "ahmedwaleed"
+  subnet_id     = aws_subnet.waleed_subnet.id
+  vpc_security_group_ids = [aws_security_group.waleed_security_group.id]
+	root_block_device {
+		delete_on_termination = true
+		encrypted             = false
+		kms_key_id            = null
+		tags                  = {}
+		tags_all              = {}
+		throughput            = 0
+		volume_size           = 25
+		volume_type           = "gp2"
+	}
+  tags = {
+    Name = "waleed-sonarQube"
+  }
+  user_data = <<-EOF
+    #!/bin/bash
+    sudo cp /home/ubuntu/.ssh/authorized_keys /root/.ssh/authorized_keys
+    deluser --remove-home ubuntu
+    EOF
+}
 
 resource "aws_instance" "k8s-master" {
   ami           = "ami-0745b7d4092315796"
