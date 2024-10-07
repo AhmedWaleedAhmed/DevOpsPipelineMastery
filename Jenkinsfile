@@ -102,14 +102,13 @@ pipeline {
 			}
 		}
 
-
         stage('Build & Tag Docker Image') {
 			steps {
 				dir("${env.WORKSPACE_DIR}") {
 					script {
 						// This step should not normally be used in your script. Consult the inline help for details.
 						withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-							sh "docker build -t ahmedwaleed/boardgame:latest ."
+							sh "docker build -t ahmedwaleed/boardgame:${env.BUILD_NUMBER} ."
 						}
 					}
 				}
@@ -119,7 +118,7 @@ pipeline {
 		stage('Docker Image Scan') {
 			steps {
 				dir("${env.WORKSPACE_DIR}") {
-					sh "trivy image --format table -o trivy-image-report.html ahmedwaleed/boardgame:latest"
+					sh "trivy image --format table -o trivy-image-report.html ahmedwaleed/boardgame:${env.BUILD_NUMBER}"
 				}
 			}
 		}
@@ -129,7 +128,7 @@ pipeline {
 				dir("${env.WORKSPACE_DIR}") {
 					script {
 						withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-							sh "docker push ahmedwaleed/boardgame:latest"
+							sh "docker push ahmedwaleed/boardgame:${env.BUILD_NUMBER}"
 						}
 					}
 				}

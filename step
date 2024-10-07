@@ -45,3 +45,5 @@ Docker version: latest
 
 
 /var/lib/jenkins/workspace/BoardGame/boardgame
+
+nexus need to be cleared
