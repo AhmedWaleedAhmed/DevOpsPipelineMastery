@@ -2,7 +2,7 @@
 # https://hbayraktar.medium.com/how-to-install-kubernetes-cluster-on-ubuntu-22-04-step-by-step-guide-7dbf7e8f5f99
 
 ---
-- hosts: all
+- hosts: k8s_cluster
   vars:
     ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
   user: root

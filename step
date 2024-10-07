@@ -1,4 +1,47 @@
-1- Create the infrastructure using terraform by running `terraform apply`. (We will create the root user here too)
-2- use the ansible playbook to set-up the servers in the inventory.
-    * ansible-playbook -i inventory.yml create_swap.yml
-    * 
+Now we will go over Jenkins UI and do a lot of configurations and install a lot of tools to save it and use it later we will do the following:
+1- on the current server that has all of the configuration
+
+- `sudo tar -czvf /tmp/jenkins_backup.tar.gz /var/lib/jenkins`
+- install the backup to your machine `scp dev@3.75.176.213:/tmp/jenkins_backup.tar.gz .`
+  2- we will push this to the repo so anyone will be able to test things out
+  3- add a new ansible task that will be responsible about copying this from local to the new server and untar it `sudo tar -xzvf jenkins_backup.tar.gz -C /`
+  4- `sudo systemctl restart jenkins`
+
+
+###############################################################################
+[] Plugins to be installed on jenkins
+1- Eclipse Temurin installer
+2- Config File Provider
+3- Pipeline Maven Integration
+4- SonarQube Scanner
+5- Docker
+6- Docker Pipeline
+7- Kubernetes Client API
+8- Kubernetes Credentials
+9- Kubernetes
+10- Kubernetes CLI
+11- Maven Integration
+
+
+
+[] Configure the plugins we installed from tools
+1- JDK installations
+Name: jdk17
+Install automatically: Install from adoptium.net
+Version: jdk-17.0.9+9
+
+2- SonarQube Scanner installations
+Name: sonar-scanner
+Version: SonarQube Scanner 6.2.1.4610
+
+3- Maven installations
+Name: maven3
+Version: 3.6.1
+
+4- Docker installations
+Name: docker
+Docker version: latest
+
+
+
+/var/lib/jenkins/workspace/BoardGame/boardgame

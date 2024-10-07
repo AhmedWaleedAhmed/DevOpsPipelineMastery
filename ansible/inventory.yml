@@ -5,22 +5,22 @@ all:
         k8s_master:
           hosts:
             master:
-              ansible_host: 
+              ansible_host: 18.197.32.151
         k8s_workers:
           hosts:
             worker1:
-              ansible_host: 
+              ansible_host: 52.59.203.141
             worker2:
-              ansible_host: 
+              ansible_host: 18.184.123.229
     sonarqube:
       hosts:
         sonarqube:
-          ansible_host: 
+          ansible_host: 18.197.188.131
     nexus:
       hosts:
         nexus:
-          ansible_host: 
+          ansible_host: 18.196.253.216
     jenkins:
       hosts:
         jenkins:
-          ansible_host: 
+          ansible_host: 54.93.103.63

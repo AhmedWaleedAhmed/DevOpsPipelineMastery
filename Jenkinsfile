@@ -1,106 +1,165 @@
 pipeline {
-	agent any
-	tools {
-		jdk 'jdk17'
-		maven 'maven3'
-	}
+    agent any
+    tools {
+        jdk 'jdk17'
+        maven 'maven3'
+    }
 	environment {
 		SCANNER_HOME= tool 'sonar-scanner'
 	}
-	stages {
-		stage('Git Checkout') {
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/AhmedWaleedAhmed/DevOpsPipelineMastery.git'
+            }
+        }
+        
+        stage('Setup the working directory') {
+            steps {
+                script {
+                    // Get the current working directory (workspace)
+                    env.WORKSPACE_DIR = "${pwd()}/boardgame"
+                }
+            }
+        }
+        
+        stage('Compile') {
+            steps {
+                dir("${env.WORKSPACE_DIR}") {
+                    sh "mvn compile"
+                }
+            }
+        }
+        
+        stage('Test') {
+            steps {
+                dir("${env.WORKSPACE_DIR}") {
+                    sh "mvn test"
+                }
+            }
+        }
+        
+        stage('File System Scan by Trivy') {
+            // Scan the file system to find the vulnerabilities that may exist in the dependencies we are using.
+            // We can find all of the dependencies in the pom.xml file.
+            // We also want to know if there are any sensitive data stored in our source code directory.
+            steps {
+                dir("${env.WORKSPACE_DIR}") {
+					// This will scan the file system and the output will be in a tabular format and will be stored in a file called trivy-fs-report.html
+					// . refers to just the scan the current directory only
+                    sh "trivy fs --format table -o trivy-fs-report.html ."
+                }
+            }
+        }
+
+		stage('SonarQube Analysis') {
+			// Here we need to configure the sonarqube server like we configured the sonarqube client on the Jenkins tools.
+			// Go to the sonarqube server itself
+			// Administration -> Security -> Users -> update tokens -> create a token (sonar-token) -> generate -> save it with you.
+			// squ_20dc28d8049db9d81b8e5599052beacfff290447
+			// Manage Jenkins -> Credentials -> System -> Global credentials (unrestricted)
+			// Kind: Secret text, Scope: Global (Jenkins, nodes, items, all child items, etc), Secret: squ_20dc28d8049db9d81b8e5599052beacfff290447, ID: sonar-token, Description: sonar-token
+			// Manage Jenkins -> System -> SonarQube servers
+			// Name: sonar, Server URL: http://18.197.188.131:9000, SonarQube authentication token: sonar-token.
+            steps {
+                dir("${env.WORKSPACE_DIR}") {
+                    withSonarQubeEnv('sonar') {
+						sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=BoardGame -Dsonar.projectKey=BoardGame \
+								-Dsonar.java.binaries=. '''
+					}
+                }
+            }
+        }
+
+		stage('Quality Gate') {
+			// Go to the sonarqube server itself
+			// Administration -> Configuration -> Webhooks
+			// Name: jenkins, URL: http://54.93.103.63:8080/sonarqube-webhook/
 			steps {
-				git branch: 'main', credentialsId: 'git-cred', url:'https://github.com/ganeshperumal007/Boardgame.git'
+				dir("${env.WORKSPACE_DIR}") {
+					script {
+						waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+					}
+				}
 			}
 		}
-		stage('Compile') {
+
+		stage('Build') {
 			steps {
-				sh "mvn compile"
+				dir("${env.WORKSPACE_DIR}") {
+					sh "mvn package"
+				}
 			}
 		}
-		stage('Test') {
+
+		stage('Publish To Nexus') {
 			steps {
-				sh "mvn test"
+				dir("${env.WORKSPACE_DIR}") {
+					withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
+						sh "mvn deploy"
+					}
+				}
 			}
 		}
-		// stage('File System Scan') {
-		// 	steps {
-		// 		sh "trivy fs --format table -o trivy-fs-report.html ."
-		// 	}
-		// }
-		// stage('SonarQube Analsyis') {
-		// 	steps {
-		// 		withSonarQubeEnv('sonar') {
-		// 			sh ''' $SCANNER_HOME/bin/sonar-scanner -
-		// 			Dsonar.projectName=BoardGame -Dsonar.projectKey=BoardGame \
-		// 			-Dsonar.java.binaries=. '''
-		// 		}
-		// 	}
-		// }
-		// stage('Quality Gate') {
-		// 	steps {
-		// 		script {
-		// 			waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
-		// 		}
-		// 	}
-		// }
-		// stage('Build') {
-		// 	steps {
-		// 		sh "mvn package"
-		// 	}
-		// }
-		// stage('Publish To Nexus') {
-		// 	steps {
-		// 		withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17',
-		// 		maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
-		// 			sh "mvn deploy"
-		// 		}
-		// 	}
-		// }
-		// stage('Build & Tag Docker Image') {
-		// 	steps {
-		// 		script {
-		// 			withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-		// 				sh "docker build -t ganeshperumal007/boardshack:latest ."
-		// 			}
-		// 		}
-		// 	}
-		// }
-		// stage('Docker Image Scan') {
-		// 	steps {
-		// 		sh "trivy image --format table -o trivy-image-report.html
-		// 		ganeshperumal007/boardshack:latest "
-		// 	}
-		// }
-		// stage('Push Docker Image') {
-		// 	steps {
-		// 		script {
-		// 			withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-		// 				sh "docker push ganeshperumal007/boardshack:latest"
-		// 			}
-		// 		}
-		// 	}
-		// }
-		// stage('Deploy To Kubernetes') {
-		// 	steps {
-		// 		withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
-		// 		credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-		// 		serverUrl: 'https://172.31.8.146:6443') {
-		// 			sh "kubectl apply -f deployment-service.yaml"
-		// 		}
-		// 	}
-		// }
-		// stage('Verify the Deployment') {
-		// 	steps {
-		// 		withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
-		// 		credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-		// 		serverUrl: 'https://172.31.8.146:6443') {
-		// 			sh "kubectl get pods -n webapps"
-		// 			sh "kubectl get svc -n webapps"
-		// 		}
-		// 	}
-		// }
-	}
+
+
+        stage('Build & Tag Docker Image') {
+			steps {
+				dir("${env.WORKSPACE_DIR}") {
+					script {
+						// This step should not normally be used in your script. Consult the inline help for details.
+						withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+							sh "docker build -t ahmedwaleed/boardgame:latest ."
+						}
+					}
+				}
+			}
+		}
+
+		stage('Docker Image Scan') {
+			steps {
+				dir("${env.WORKSPACE_DIR}") {
+					sh "trivy image --format table -o trivy-image-report.html ahmedwaleed/boardgame:latest"
+				}
+			}
+		}
+
+		stage('Push Docker Image') {
+			steps {
+				dir("${env.WORKSPACE_DIR}") {
+					script {
+						withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
+							sh "docker push ahmedwaleed/boardgame:latest"
+						}
+					}
+				}
+			}
+		}
+
+		stage('Deploy To Kubernetes') {
+			steps {
+				dir("${env.WORKSPACE_DIR}") {
+					withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
+					credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
+					serverUrl: 'https://10.10.10.24:6443') {
+						sh "kubectl apply -f deployment-service.yaml"
+					}
+				}
+			}
+		}
+
+		stage('Verify the Deployment') {
+			steps {
+				withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
+				credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
+				serverUrl: 'https://10.10.10.24:6443') {
+					sh "kubectl get pods -n webapps"
+					sh "kubectl get svc -n webapps"
+				}
+			}
+		}
+    }
+
 	post {
 		always {
 			script {
