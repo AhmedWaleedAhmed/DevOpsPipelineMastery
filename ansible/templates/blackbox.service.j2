@@ -1,0 +1,12 @@
+[Unit]
+Description=Black Box Service
+After=network.target
+
+[Service]
+ExecStart=/opt/prometheus/blackbox/blackbox_exporter --config.file=/opt/prometheus/blackbox//blackbox.yml
+Restart=always
+User=prometheus 
+Group=prometheus
+
+[Install]
+WantedBy=multi-user.target

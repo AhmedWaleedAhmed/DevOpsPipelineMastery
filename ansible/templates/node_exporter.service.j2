@@ -1,0 +1,12 @@
+[Unit]
+Description=Node Exporter Service
+After=network.target
+
+[Service]
+ExecStart=/opt/prometheus/node_exporter/node_exporter
+Restart=always
+User=prometheus 
+Group=prometheus
+
+[Install]
+WantedBy=multi-user.target

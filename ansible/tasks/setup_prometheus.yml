@@ -1,0 +1,69 @@
+- name: Create prometheus group
+  group:
+    name: prometheus
+    state: present
+  become: true
+
+- name: Create prometheus user
+  user:
+    name: prometheus
+    group: prometheus
+    system: yes
+    shell: /usr/sbin/nologin
+    home: /opt/prometheus
+  become: true
+
+- name: Ensure /opt/prometheus directory exists
+  file:
+    path: /opt/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  become: true
+
+- name: Download and extract Prometheus to /opt/prometheus
+  unarchive:
+    src: "https://github.com/prometheus/prometheus/releases/download/v2.53.2/prometheus-2.53.2.linux-amd64.tar.gz"
+    dest: "/opt/prometheus"
+    remote_src: yes
+    extra_opts: ["--strip-components=1"]
+    creates: "/opt/prometheus/prometheus"  # Ensures the task runs only once
+    owner: prometheus
+    group: prometheus
+  become: true
+
+- name: Remove unnecessary folder after extraction
+  file:
+    path: "/opt/prometheus/prometheus-2.53.2.linux-amd64"
+    state: absent
+  ignore_errors: yes
+  become: true
+
+- name: Create prometheus configuration file
+  template: 
+    src: ../templates/prometheus.yml.j2
+    dest: /opt/prometheus/prometheus.yml
+    owner: prometheus
+    group: prometheus
+    mode: '0644'
+  become: true
+
+- name: Copy Prometheus systemd service file from template
+  template:
+    src: ../templates/prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    mode: '0644'
+  become: true
+
+- name: Reload systemd to pick up the Prometheus service
+  systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Enable and start Prometheus service
+  systemd:
+    name: prometheus
+    enabled: yes
+    state: restarted
+  become: true

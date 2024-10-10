@@ -1,0 +1,38 @@
+- name: Ensure /opt/prometheus/blackbox directory exists
+  file:
+    path: /opt/prometheus/blackbox
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  become: true
+
+- name: Download and extract blackbox to /opt/prometheus/blackbox
+  unarchive:
+    src: "https://github.com/prometheus/blackbox_exporter/releases/download/v0.25.0/blackbox_exporter-0.25.0.linux-amd64.tar.gz"
+    dest: "/opt/prometheus/blackbox"
+    remote_src: yes
+    extra_opts: ["--strip-components=1"]
+    creates: "/opt/prometheus/blackbox/blackbox_exporter"  # Ensures the task runs only once
+    owner: prometheus
+    group: prometheus
+  become: true
+
+- name: Copy blackbox systemd service file from template
+  template:
+    src: ../templates/blackbox.service.j2
+    dest: /etc/systemd/system/blackbox.service
+    mode: '0644'
+  become: true
+
+- name: Reload systemd to pick up the blackbox service
+  systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Enable and start blackbox service
+  systemd:
+    name: blackbox
+    enabled: yes
+    state: restarted
+  become: true

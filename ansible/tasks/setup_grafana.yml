@@ -1,0 +1,37 @@
+- name: Install required packages for Grafana
+  apt:
+    name:
+      - adduser
+      - libfontconfig1
+      - musl
+    state: present
+    update_cache: yes
+  become: true
+
+- name: Download Grafana Enterprise .deb package
+  get_url:
+    url: "https://dl.grafana.com/enterprise/release/grafana-enterprise_11.2.2_amd64.deb"
+    dest: "/tmp/grafana-enterprise_11.2.2_amd64.deb"
+
+- name: Install Grafana Enterprise
+  apt:
+    deb: "/tmp/grafana-enterprise_11.2.2_amd64.deb"
+  become: true
+
+- name: Remove Grafana .deb package after installation
+  file:
+    path: "/tmp/grafana-enterprise_11.2.2_amd64.deb"
+    state: absent
+  become: true
+
+- name: Reload systemd to pick up the Grafana service
+  systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Enable and start Grafana service
+  systemd:
+    name: grafana-server
+    enabled: yes
+    state: restarted
+  become: true

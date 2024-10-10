@@ -1,0 +1,62 @@
+- name: Create prometheus group
+  group:
+    name: prometheus
+    state: present
+  become: true
+
+- name: Create prometheus user
+  user:
+    name: prometheus
+    group: prometheus
+    system: yes
+    shell: /usr/sbin/nologin
+    home: /opt/prometheus
+  become: true
+
+- name: Ensure /opt/prometheus directory exists
+  file:
+    path: /opt/prometheus
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  become: true
+
+- name: Ensure /opt/prometheus/node_exporter directory exists
+  file:
+    path: /opt/prometheus/node_exporter
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  become: true
+
+- name: Download and extract node_exporter to /opt/prometheus/node_exporter
+  unarchive:
+    src: "https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz"
+    dest: "/opt/prometheus/node_exporter"
+    remote_src: yes
+    extra_opts: ["--strip-components=1"]
+    creates: "/opt/prometheus/node_exporter/node_exporter"  # Ensures the task runs only once
+    owner: prometheus
+    group: prometheus
+  become: true
+
+- name: Copy node_exporter systemd service file from template
+  template:
+    src: ../templates/node_exporter.service.j2
+    dest: /etc/systemd/system/node_exporter.service
+    mode: '0644'
+  become: true
+
+- name: Reload systemd to pick up the node_exporter service
+  systemd:
+    daemon_reload: yes
+  become: true
+
+- name: Enable and start node_exporter service
+  systemd:
+    name: node_exporter
+    enabled: yes
+    state: restarted
+  become: true

@@ -1,0 +1,33 @@
+# ansible-playbook -i inventory.yml playbooks/monitoring_setup.yml --start-at-task "Reload systemd to pick up the Grafana service"
+---
+- hosts: monitoring
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+  user: root
+  gather_facts: yes
+  tasks:
+
+    - include_tasks: ../tasks/init.yml
+
+    - set_fact: ansible_user=dev # switch to dev user.
+
+    - name: Update package list
+      apt:
+        update_cache: yes
+      become: true
+
+    - name: Upgrade all packages
+      apt:
+        upgrade: dist
+      become: true
+
+    - include_tasks: ../tasks/setup_prometheus.yml
+
+    - include_tasks: ../tasks/setup_grafana.yml
+
+    - include_tasks: ../tasks/setup_blackbox.yml
+
+
+
+
+    

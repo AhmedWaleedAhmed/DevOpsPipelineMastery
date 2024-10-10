@@ -5,26 +5,26 @@ all:
         k8s_master:
           hosts:
             master:
-              ansible_host: 3.66.235.60
+              ansible_host: ${master_ip}
         k8s_workers:
           hosts:
             worker1:
-              ansible_host: 3.122.237.156
+              ansible_host: ${worker1_ip}
             worker2:
-              ansible_host: 3.79.237.223
+              ansible_host: ${worker2_ip}
     sonarqube:
       hosts:
         sonarqube:
-          ansible_host: 18.199.67.75
+          ansible_host: ${sonarqube_ip}
     nexus:
       hosts:
         nexus:
-          ansible_host: 52.29.7.16
+          ansible_host: ${nexus_ip}
     jenkins:
       hosts:
         jenkins:
-          ansible_host: 18.185.94.233
+          ansible_host: ${jenkins_ip}
     monitoring:
       hosts:
         monitoring:
-          ansible_host: 3.123.35.8
+          ansible_host: ${monitoring_ip}
