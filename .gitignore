@@ -1,4 +1,11 @@
 *.pdf
 terraform/*
 !terraform/main.tf
+!terraform/data.tf
+!terraform/user_data.sh
+!terraform/variables.tf
+!terraform/terraform.tfvars
+!terraform/outputs.tf
+!terraform/templates
 *.mp4
+*.tar.gz

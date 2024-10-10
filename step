@@ -2,7 +2,7 @@ Now we will go over Jenkins UI and do a lot of configurations and install a lot 
 1- on the current server that has all of the configuration
 
 - `sudo tar -czvf /tmp/jenkins_backup.tar.gz /var/lib/jenkins`
-- install the backup to your machine `scp dev@3.75.176.213:/tmp/jenkins_backup.tar.gz .`
+- install the backup to your machine `scp dev@54.93.103.63:/tmp/jenkins_backup.tar.gz .`
   2- we will push this to the repo so anyone will be able to test things out
   3- add a new ansible task that will be responsible about copying this from local to the new server and untar it `sudo tar -xzvf jenkins_backup.tar.gz -C /`
   4- `sudo systemctl restart jenkins`
