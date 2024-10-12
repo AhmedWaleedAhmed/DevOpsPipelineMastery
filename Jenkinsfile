@@ -93,6 +93,9 @@ pipeline {
 		}
 
 		stage('Publish To Nexus') {
+			// here we update the last part of the pom.xml related to maven-releases and maven-snapshots with the urls related to nexus we copy them from the relaeses and snapshot 
+			// we need to add a configuration file in managed files and this will be `Global Maven settings`
+			// id = global-settings   
 			steps {
 				dir("${env.WORKSPACE_DIR}") {
 					withMaven(globalMavenSettingsConfig: 'global-settings', jdk: 'jdk17', maven: 'maven3', mavenSettingsConfig: '', traceability: true) {
@@ -135,65 +138,65 @@ pipeline {
 			}
 		}
 
-		stage('Deploy To Kubernetes') {
-			steps {
-				dir("${env.WORKSPACE_DIR}") {
-					withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
-					credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-					serverUrl: 'https://10.10.10.24:6443') {
-						sh "kubectl apply -f deployment-service.yaml"
-					}
-				}
-			}
-		}
+		// stage('Deploy To Kubernetes') {
+		// 	steps {
+		// 		dir("${env.WORKSPACE_DIR}") {
+		// 			withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
+		// 			credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
+		// 			serverUrl: 'https://10.10.10.24:6443') {
+		// 				sh "kubectl apply -f deployment-service.yaml"
+		// 			}
+		// 		}
+		// 	}
+		// }
 
-		stage('Verify the Deployment') {
-			steps {
-				withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
-				credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-				serverUrl: 'https://10.10.10.24:6443') {
-					sh "kubectl get pods -n webapps"
-					sh "kubectl get svc -n webapps"
-				}
-			}
-		}
+		// stage('Verify the Deployment') {
+		// 	steps {
+		// 		withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
+		// 		credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
+		// 		serverUrl: 'https://10.10.10.24:6443') {
+		// 			sh "kubectl get pods -n webapps"
+		// 			sh "kubectl get svc -n webapps"
+		// 		}
+		// 	}
+		// }
     }
 
-	post {
-		always {
-			script {
-				def jobName = env.JOB_NAME
-				def buildNumber = env.BUILD_NUMBER
-				def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
-				def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red'
-				def body = """
-				<html>
-				<body>
-				<div style="border: 4px solid ${bannerColor}; padding:
-				10px;">
-				<h2>${jobName} - Build
-				${buildNumber}</h2>
-				<div style="background-color:
-				${bannerColor}; padding:
-				10px;">
-				<h3 style="color: white;">Pipeline
-				Status:
-				${pipelineStatus.toUpperCase()}</h3>
-				</div>
-				<p>Check the <a href="${BUILD_URL}">consoleoutput</a>.</p> </div>
-				</body>
-				</html>
-				"""
-				emailext (
-				subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
-				body: body,
-				to: 'ahmdwlydahmd09@gmail.com',
-				from: 'jenkins@example.com',
-				replyTo: 'jenkins@example.com',
-				mimeType: 'text/html',
-				attachmentsPattern: 'trivy-image-report.html'
-				)
-			}
-		}
-	}
+	// post {
+	// 	always {
+	// 		script {
+	// 			def jobName = env.JOB_NAME
+	// 			def buildNumber = env.BUILD_NUMBER
+	// 			def pipelineStatus = currentBuild.result ?: 'UNKNOWN'
+	// 			def bannerColor = pipelineStatus.toUpperCase() == 'SUCCESS' ? 'green' : 'red'
+	// 			def body = """
+	// 			<html>
+	// 			<body>
+	// 			<div style="border: 4px solid ${bannerColor}; padding:
+	// 			10px;">
+	// 			<h2>${jobName} - Build
+	// 			${buildNumber}</h2>
+	// 			<div style="background-color:
+	// 			${bannerColor}; padding:
+	// 			10px;">
+	// 			<h3 style="color: white;">Pipeline
+	// 			Status:
+	// 			${pipelineStatus.toUpperCase()}</h3>
+	// 			</div>
+	// 			<p>Check the <a href="${BUILD_URL}">consoleoutput</a>.</p> </div>
+	// 			</body>
+	// 			</html>
+	// 			"""
+	// 			emailext (
+	// 			subject: "${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}",
+	// 			body: body,
+	// 			to: 'ahmdwlydahmd09@gmail.com',
+	// 			from: 'jenkins@example.com',
+	// 			replyTo: 'jenkins@example.com',
+	// 			mimeType: 'text/html',
+	// 			attachmentsPattern: 'trivy-image-report.html'
+	// 			)
+	// 		}
+	// 	}
+	// }
 }

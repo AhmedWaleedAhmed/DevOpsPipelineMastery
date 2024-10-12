@@ -1,0 +1,106 @@
+# ansible-playbook -i inventory.yml playbooks/jenkins_install_plugins.yml
+# terraform destroy --auto-approve -target="aws_instance.jenkins"
+# terraform apply --auto-approve -target="local_file.ansible_inventory"
+---
+- hosts: jenkins
+  user: dev
+  gather_facts: yes
+
+  vars_prompt:
+    - name: token
+      prompt: "Please enter your jenkins token"
+      private: yes
+
+    - name: "sonar_token"
+      prompt: "Please enter the Sonar token"
+      private: yes
+
+    - name: "nexus_username"
+      prompt: "Please enter the Nexus username"
+      private: false
+
+    - name: "nexus_password"
+      prompt: "Please enter the Nexus password"
+      private: true
+      
+    - name: "docker_token"
+      prompt: "Please enter the Docker token"
+      private: yes
+
+
+  vars:
+    ansible_ssh_common_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+    jenkins_url: "http://{{ ansible_host }}:8080/"
+    jenkins_plugins:
+      - adoptopenjdk
+      - config-file-provider
+      - pipeline-maven
+      - sonar
+      - docker-plugin
+      - docker-workflow
+      - kubernetes-client-api
+      - kubernetes-credentials
+      - kubernetes
+      - kubernetes-cli
+      - maven-plugin
+      - prometheus
+      - pipeline-stage-view
+      - configuration-as-code
+      - cloudbees-disk-usage-simple
+
+  tasks:
+
+    - name: Download jenkins-cli.jar
+      get_url:
+        url: "{{ jenkins_url }}jnlpJars/jenkins-cli.jar"
+        dest: "/var/lib/jenkins/jenkins-cli.jar"
+      become: true
+
+    - name: Install Jenkins Plugins
+      command: >
+        java -jar /var/lib/jenkins/jenkins-cli.jar -s {{ jenkins_url }} -auth admin:{{ token }} install-plugin {{ item }}
+      loop: "{{ jenkins_plugins }}"
+      become: true
+
+    - name: Copy Job configuration template
+      template:
+        src: ../templates/job.xml.j2
+        dest: /var/lib/jenkins/pipeline_config.xml
+      become: true
+
+    - name: Create Pipeline Job using Jenkins CLI
+      shell: |
+        java -jar /var/lib/jenkins/jenkins-cli.jar -s {{ jenkins_url }} -auth admin:{{ token }} create-job BoardGame < /var/lib/jenkins/pipeline_config.xml
+      become: true
+
+    - name: Restart Jenkins
+      command: >
+        java -jar /var/lib/jenkins/jenkins-cli.jar -s {{ jenkins_url }} -auth admin:{{ token }} restart
+      become: true
+
+    - name: Ensure the casc_configs directory exists
+      file:
+        path: /var/lib/jenkins/casc_configs
+        state: directory
+        mode: '0755'
+      become: true
+
+    - name: Copy JCasC configuration template
+      template:
+        src: ../templates/jenkins.yml.j2
+        dest: /var/lib/jenkins/casc_configs/jenkins.yml
+      become: true
+
+    - name: Update JENKINS_JAVA_OPTIONS in /etc/default/jenkins
+      lineinfile:
+        path: /etc/default/jenkins
+        regexp: '^JAVA_ARGS='
+        line: 'JAVA_ARGS="$JAVA_ARGS -Dcasc.jenkins.config=/var/lib/jenkins/casc_configs"'
+        state: present
+      become: true
+
+    - name: Restart Jenkins to apply changes
+      service:
+        name: jenkins
+        state: restarted
+      become: true

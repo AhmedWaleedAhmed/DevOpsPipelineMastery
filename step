@@ -9,6 +9,12 @@ Now we will go over Jenkins UI and do a lot of configurations and install a lot 
 
 
 ###############################################################################
+1- run the setup script for jenkins
+2- unlock jenkins
+3- create a token for your user
+4- run the playbook to install the required plugins using the token
+5- from the ui from the CasC apply the connfigrations in `/var/lib/jenkins/casc_configs`
+
 [] Plugins to be installed on jenkins
 1- Eclipse Temurin installer
 2- Config File Provider

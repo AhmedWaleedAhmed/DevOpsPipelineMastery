@@ -1,0 +1,228 @@
+<?xml version='1.1' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@1436.vfa_244484591f">
+  <actions>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobAction plugin="pipeline-model-definition@2.2214.vb_b_34b_2ea_9b_83"/>
+    <org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction plugin="pipeline-model-definition@2.2214.vb_b_34b_2ea_9b_83">
+      <jobProperties/>
+      <triggers/>
+      <parameters/>
+      <options/>
+    </org.jenkinsci.plugins.pipeline.modeldefinition.actions.DeclarativeJobPropertyTrackerAction>
+  </actions>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>2</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition" plugin="workflow-cps@3969.vdc9d3a_efcc6a_">
+    <script>pipeline {
+    agent any
+    tools {
+        jdk &apos;jdk17&apos;
+        maven &apos;maven3&apos;
+    }
+	environment {
+		SCANNER_HOME= tool &apos;sonar-scanner&apos;
+	}
+    stages {
+        stage(&apos;Git Checkout&apos;) {
+            steps {
+                git branch: &apos;main&apos;, url: &apos;https://github.com/AhmedWaleedAhmed/DevOpsPipelineMastery.git&apos;
+            }
+        }
+        
+        stage(&apos;Setup the working directory&apos;) {
+            steps {
+                script {
+                    // Get the current working directory (workspace)
+                    env.WORKSPACE_DIR = &quot;${pwd()}/boardgame&quot;
+                }
+            }
+        }
+        
+        stage(&apos;Compile&apos;) {
+            steps {
+                dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+                    sh &quot;mvn compile&quot;
+                }
+            }
+        }
+        
+        stage(&apos;Test&apos;) {
+            steps {
+                dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+                    sh &quot;mvn test&quot;
+                }
+            }
+        }
+        
+        stage(&apos;File System Scan by Trivy&apos;) {
+            // Scan the file system to find the vulnerabilities that may exist in the dependencies we are using.
+            // We can find all of the dependencies in the pom.xml file.
+            // We also want to know if there are any sensitive data stored in our source code directory.
+            steps {
+                dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					// This will scan the file system and the output will be in a tabular format and will be stored in a file called trivy-fs-report.html
+					// . refers to just the scan the current directory only
+                    sh &quot;trivy fs --format table -o trivy-fs-report.html .&quot;
+                }
+            }
+        }
+
+		stage(&apos;SonarQube Analysis&apos;) {
+			// Here we need to configure the sonarqube server like we configured the sonarqube client on the Jenkins tools.
+			// Go to the sonarqube server itself
+			// Administration -&gt; Security -&gt; Users -&gt; update tokens -&gt; create a token (sonar-token) -&gt; generate -&gt; save it with you.
+			// squ_20dc28d8049db9d81b8e5599052beacfff290447
+			// Manage Jenkins -&gt; Credentials -&gt; System -&gt; Global credentials (unrestricted)
+			// Kind: Secret text, Scope: Global (Jenkins, nodes, items, all child items, etc), Secret: squ_20dc28d8049db9d81b8e5599052beacfff290447, ID: sonar-token, Description: sonar-token
+			// Manage Jenkins -&gt; System -&gt; SonarQube servers
+			// Name: sonar, Server URL: http://18.197.188.131:9000, SonarQube authentication token: sonar-token.
+            steps {
+                dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+                    withSonarQubeEnv(&apos;sonar&apos;) {
+						sh &apos;&apos;&apos; $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=BoardGame -Dsonar.projectKey=BoardGame \
+								-Dsonar.java.binaries=. &apos;&apos;&apos;
+					}
+                }
+            }
+        }
+
+		stage(&apos;Quality Gate&apos;) {
+			// Go to the sonarqube server itself
+			// Administration -&gt; Configuration -&gt; Webhooks
+			// Name: jenkins, URL: http://54.93.103.63:8080/sonarqube-webhook/
+			steps {
+				dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					script {
+						waitForQualityGate abortPipeline: false, credentialsId: &apos;sonar-token&apos;
+					}
+				}
+			}
+		}
+
+		stage(&apos;Build&apos;) {
+			steps {
+				dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					sh &quot;mvn package&quot;
+				}
+			}
+		}
+
+		stage(&apos;Publish To Nexus&apos;) {
+			steps {
+				dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					withMaven(globalMavenSettingsConfig: &apos;global-settings&apos;, jdk: &apos;jdk17&apos;, maven: &apos;maven3&apos;, mavenSettingsConfig: &apos;&apos;, traceability: true) {
+						sh &quot;mvn deploy&quot;
+					}
+				}
+			}
+		}
+
+        stage(&apos;Build &amp; Tag Docker Image&apos;) {
+			steps {
+				dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					script {
+						// This step should not normally be used in your script. Consult the inline help for details.
+						withDockerRegistry(credentialsId: &apos;docker-cred&apos;, toolName: &apos;docker&apos;) {
+							sh &quot;docker build -t ahmedwaleed/boardgame:${env.BUILD_NUMBER} .&quot;
+						}
+					}
+				}
+			}
+		}
+
+		stage(&apos;Docker Image Scan&apos;) {
+			steps {
+				dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					sh &quot;trivy image --format table -o trivy-image-report.html ahmedwaleed/boardgame:${env.BUILD_NUMBER}&quot;
+				}
+			}
+		}
+
+		stage(&apos;Push Docker Image&apos;) {
+			steps {
+				dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					script {
+						withDockerRegistry(credentialsId: &apos;docker-cred&apos;, toolName: &apos;docker&apos;) {
+							sh &quot;docker push ahmedwaleed/boardgame:${env.BUILD_NUMBER}&quot;
+						}
+					}
+				}
+			}
+		}
+
+		stage(&apos;Deploy To Kubernetes&apos;) {
+			steps {
+				dir(&quot;${env.WORKSPACE_DIR}&quot;) {
+					withKubeConfig(caCertificate: &apos;&apos;, clusterName: &apos;kubernetes&apos;, contextName: &apos;&apos;,
+					credentialsId: &apos;k8-cred&apos;, namespace: &apos;webapps&apos;, restrictKubeConfigAccess: false,
+					serverUrl: &apos;https://10.10.10.24:6443&apos;) {
+						sh &quot;kubectl apply -f deployment-service.yaml&quot;
+					}
+				}
+			}
+		}
+
+		stage(&apos;Verify the Deployment&apos;) {
+			steps {
+				withKubeConfig(caCertificate: &apos;&apos;, clusterName: &apos;kubernetes&apos;, contextName: &apos;&apos;,
+				credentialsId: &apos;k8-cred&apos;, namespace: &apos;webapps&apos;, restrictKubeConfigAccess: false,
+				serverUrl: &apos;https://10.10.10.24:6443&apos;) {
+					sh &quot;kubectl get pods -n webapps&quot;
+					sh &quot;kubectl get svc -n webapps&quot;
+				}
+			}
+		}
+    }
+
+	post {
+		always {
+			script {
+				def jobName = env.JOB_NAME
+				def buildNumber = env.BUILD_NUMBER
+				def pipelineStatus = currentBuild.result ?: &apos;UNKNOWN&apos;
+				def bannerColor = pipelineStatus.toUpperCase() == &apos;SUCCESS&apos; ? &apos;green&apos; : &apos;red&apos;
+				def body = &quot;&quot;&quot;
+				&lt;html&gt;
+				&lt;body&gt;
+				&lt;div style=&quot;border: 4px solid ${bannerColor}; padding:
+				10px;&quot;&gt;
+				&lt;h2&gt;${jobName} - Build
+				${buildNumber}&lt;/h2&gt;
+				&lt;div style=&quot;background-color:
+				${bannerColor}; padding:
+				10px;&quot;&gt;
+				&lt;h3 style=&quot;color: white;&quot;&gt;Pipeline
+				Status:
+				${pipelineStatus.toUpperCase()}&lt;/h3&gt;
+				&lt;/div&gt;
+				&lt;p&gt;Check the &lt;a href=&quot;${BUILD_URL}&quot;&gt;consoleoutput&lt;/a&gt;.&lt;/p&gt; &lt;/div&gt;
+				&lt;/body&gt;
+				&lt;/html&gt;
+				&quot;&quot;&quot;
+				emailext (
+				subject: &quot;${jobName} - Build ${buildNumber} - ${pipelineStatus.toUpperCase()}&quot;,
+				body: body,
+				to: &apos;ahmdwlydahmd09@gmail.com&apos;,
+				from: &apos;jenkins@example.com&apos;,
+				replyTo: &apos;jenkins@example.com&apos;,
+				mimeType: &apos;text/html&apos;,
+				attachmentsPattern: &apos;trivy-image-report.html&apos;
+				)
+			}
+		}
+	}
+}</script>
+    <sandbox>true</sandbox>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
