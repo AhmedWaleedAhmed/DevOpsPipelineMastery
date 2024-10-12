@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: boardgame
-          image: "ahmedwaleed/boardgame:${IMAGE_TAG}" # Use environment variable for the image tag
+          image: "ahmedwaleed/boardgame:latest" # Use environment variable for the image tag
           imagePullPolicy: Always
           ports:
             - containerPort: 8080 # The port that the container is running on in the cluster
