@@ -85,6 +85,14 @@
         mode: '0755'
       become: true
 
+    - name: Read Jenkins token from file
+      set_fact:
+        k8s_token: "{{ lookup('file', '../tmp/k8s_token') }}"
+      delegate_to: localhost
+      become: true
+
+    # we need to delete the file here.
+
     - name: Copy JCasC configuration template
       template:
         src: ../templates/jenkins.yml.j2

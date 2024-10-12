@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: boardgame
-          image: ahmedwaleed/boardgame:15 # Image that will be used to containers in the cluster
+          image: "ahmedwaleed/boardgame:${IMAGE_TAG}" # Use environment variable for the image tag
           imagePullPolicy: Always
           ports:
             - containerPort: 8080 # The port that the container is running on in the cluster
@@ -32,5 +32,5 @@ spec:
   ports:
     - protocol: "TCP"
       port: 80
-      targetPort: 8080 
-  type: LoadBalancer # type of the service.
+      targetPort: 8080
+  type: LoadBalancer

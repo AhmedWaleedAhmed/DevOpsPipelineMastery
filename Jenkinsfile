@@ -138,28 +138,32 @@ pipeline {
 			}
 		}
 
-		// stage('Deploy To Kubernetes') {
-		// 	steps {
-		// 		dir("${env.WORKSPACE_DIR}") {
-		// 			withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
-		// 			credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-		// 			serverUrl: 'https://10.10.10.24:6443') {
-		// 				sh "kubectl apply -f deployment-service.yaml"
-		// 			}
-		// 		}
-		// 	}
-		// }
+		stage('Deploy To Kubernetes') {
+			steps {
+				dir("${env.WORKSPACE_DIR}") {
+					// we need to get this url from k8s_master server
+					// cd ~/.kube
+					// cat config | grep server
+					withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
+					credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
+					serverUrl: 'https://10.10.10.24:6443') {
+						sh "export IMAGE_TAG=${env.BUILD_NUMBER}"
+						sh "envsubst < deployment-service.yaml | kubectl apply -f -"
+					}
+				}
+			}
+		}
 
-		// stage('Verify the Deployment') {
-		// 	steps {
-		// 		withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
-		// 		credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-		// 		serverUrl: 'https://10.10.10.24:6443') {
-		// 			sh "kubectl get pods -n webapps"
-		// 			sh "kubectl get svc -n webapps"
-		// 		}
-		// 	}
-		// }
+		stage('Verify the Deployment') {
+			steps {
+				withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
+				credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
+				serverUrl: 'https://10.10.10.24:6443') {
+					sh "kubectl get pods -n webapps"
+					sh "kubectl get svc -n webapps"
+				}
+			}
+		}
     }
 
 	// post {

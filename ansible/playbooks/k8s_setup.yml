@@ -205,6 +205,80 @@
         join_command: "{{ join_command.stdout }}"
       become: true
 
+    - name: Create a new namespace called webapps
+      command: kubectl create ns webapps
+      become: true
+
+    - name: Ensure /opt/kubernetes/manifests directory exists
+      ansible.builtin.file:
+        path: /opt/kubernetes/manifests
+        state: directory
+        owner: dev
+        group: dev
+        mode: '0755'
+
+    - name: Copy create_service_account.yml.j2 file from template
+      template:
+        src: ../templates/create_service_account.yml.j2
+        dest: /opt/kubernetes/manifests/create_service_account.yml
+        mode: '0644'
+      become: true
+    
+    - name: Apply create_service_account.yml using kubectl
+      command: kubectl apply -f /opt/kubernetes/manifests/create_service_account.yml
+      become: true
+
+    - name: Copy create_k8s_role.yml.j2 file from template
+      template:
+        src: ../templates/create_k8s_role.yml.j2
+        dest: /opt/kubernetes/manifests/create_k8s_role.yml
+        mode: '0644'
+      become: true
+    
+    - name: Apply create_k8s_role.yml using kubectl
+      command: kubectl apply -f /opt/kubernetes/manifests/create_k8s_role.yml
+      become: true
+
+    - name: Copy bind_role_to_service_account.yml.j2 file from template
+      template:
+        src: ../templates/bind_role_to_service_account.yml.j2
+        dest: /opt/kubernetes/manifests/bind_role_to_service_account.yml
+        mode: '0644'
+      become: true
+    
+    - name: Apply bind_role_to_service_account.yml using kubectl
+      command: kubectl apply -f /opt/kubernetes/manifests/bind_role_to_service_account.yml
+      become: true
+
+    - name: Copy service_account_token.yml.j2 file from template
+      template:
+        src: ../templates/service_account_token.yml.j2
+        dest: /opt/kubernetes/manifests/service_account_token.yml
+        mode: '0644'
+      become: true
+    
+    - name: Apply service_account_token.yml using kubectl
+      command: kubectl apply -f /opt/kubernetes/manifests/service_account_token.yml -n webapps
+      become: true
+
+    - name: Get Jenkins token from Kubernetes secret
+      command: kubectl get secret mysecretname -n webapps -o jsonpath='{.data.token}' | base64 --decode
+      register: jenkins_token_output
+      become: true
+
+    - name: Save Jenkins token to file
+      copy:
+        content: "{{ jenkins_token_output.stdout }}"
+        dest: ../tmp/k8s_token
+      delegate_to: localhost
+      become: true
+  
+
+    
+
+      
+
+
 # Task for joining worker nodes
 - hosts: k8s_workers
   user: dev

@@ -7,6 +7,11 @@ credentials:
           id: "sonar-token"
           scope: GLOBAL
           secret: "{{ sonar_token }}"
+      - string:
+          description: "k8-cred"
+          id: "k8-cred"
+          scope: GLOBAL
+          secret: "{{ k8s_token }}"
       - usernamePassword:
           description: "docker-cred"
           id: "docker-cred"

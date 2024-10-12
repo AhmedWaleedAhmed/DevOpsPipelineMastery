@@ -77,3 +77,30 @@
     - include_tasks: ../tasks/setup_trivy.yml
 
     - include_tasks: ../tasks/setup_node_exporter.yml
+
+    - name: Download kubectl
+      get_url:
+        url: https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+        dest: /tmp/kubectl  # Temporary download location
+        mode: '0755'  # Set permissions to executable
+      become: true
+
+    - name: Move kubectl to /usr/local/bin
+      command: mv /tmp/kubectl /usr/local/bin/kubectl
+      become: true
+
+    - name: Ensure kubectl is executable
+      file:
+        path: /usr/local/bin/kubectl
+        mode: '0755'
+      become: true
+
+    - name: Check kubectl version
+      command: kubectl version --short --client
+      register: kubectl_version
+      become: true
+
+    - name: Display kubectl version
+      debug:
+        var: kubectl_version.stdout
+      become: true
