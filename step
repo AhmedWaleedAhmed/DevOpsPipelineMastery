@@ -55,34 +55,4 @@ Docker version: latest
 
 nexus need to be cleared
 ##################################################################
-steps to run the whole project
-1- run the terraform `terraform apply --auto-approve` to create the whole infrastructure.
-2- ansible-playbook -i inventory.yml playbooks/nexus_setup.yml
-3- open `http://35.159.165.36:8081/`
-4- login username: admin, password: docker exec -it nexus cat /nexus-data/admin.password (after sshin to the server it self)
-5- ansible-playbook -i inventory.yml playbooks/sonarqube_setup.yml
-6- open `http://18.196.231.211:9000/`
-7- login username: admin, password: admin
-8- ansible-playbook -i inventory.yml playbooks/jenkins_setup.yml
-9- open `http://3.69.30.69:8080/`
-10- unlock Jenkins & create the admin user with the password related to it.
-11 - prepare a jenkins token admin > Configure > API Token `11595fdb580c4ee97b493ef56dfa907ed4`
-12 - prepare a sonar_token Administration > Security > Users > Tokens `squ_322f8bf98280c4d47eae7d3a6d89818bbc49362c`
-13 - prepare nexus_username : admin
-14 - prepare nexus_password : 123
-15 - prepare you dockerhub token : Account Settings > Personal access tokens (Read & Write scope) `dckr_pat_iTXdxdCl8wFFIqo6GEdaleIKolQ`
-16 - create sonarqube webhook on sonarqube server Administration > Configuration > Webhooks > http://<Jenkins-IP>:8080/sonarqube-webhook/
-17 - update the pom.xml file and push it to the github
-// here we update the last part of the pom.xml related to maven-releases and maven-snapshots with the urls related to nexus we copy them from the relaeses and snapshot 
-			// we need to add a configuration file in managed files and this will be `Global Maven settings`
-			// id = global-settings   
-16 - ansible-playbook -i inventory.yml playbooks/jenkins_install_plugins.yml
-17 - Manage Jenkins > Configuration as Code > Path or URL: `/var/lib/jenkins/casc_configs` > Apply new configuration
-18 - check that all of the plugins installed from the UI
-19 - check that all of the tools installed in tools section
-20 - check that managed configuraition file is there
-21 - check on the credentials
-22 - check on the system (sonar)
-23 - check on the pipeline
-24 - 
 
