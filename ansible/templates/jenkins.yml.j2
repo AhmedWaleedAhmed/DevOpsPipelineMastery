@@ -208,9 +208,9 @@ unclassified:
           \    </server>\n    -->\n    \n    <!-- Another sample, using keys to authenticate.\n\
           \    <server>\n      <id>siteServer</id>\n      <privateKey>/path/to/private/key</privateKey>\n\
           \      <passphrase>optional; leave empty if not used.</passphrase>\n   \
-          \ </server>\n    -->\n    <server>\n      <id>maqven-releases</id>\n   \
+          \ </server>\n    -->\n    <server>\n      <id>maven-releases</id>\n   \
           \   <username>{{ nexus_username }}</username>\n      <password>{{ nexus_password }}</password>\n    </server>\n\
-          \    <server>\n      <id>maqven-snapshots</id>\n      <username>{{ nexus_username }}</username>\n\
+          \    <server>\n      <id>maven-snapshots</id>\n      <username>{{ nexus_username }}</username>\n\
           \      <password>{{ nexus_password }}</password>\n    </server>\n  </servers>\n\n  <!-- mirrors\n\
           \   | This is a list of mirrors to be used in downloading artifacts from\
           \ remote repositories.\n   | \n   | It works like this: a POM may declare\
