@@ -144,9 +144,10 @@ pipeline {
 					// we need to get this url from k8s_master server
 					// cd ~/.kube
 					// cat config | grep server
+					//  here we just need to get the private ip and update this with it only.
 					withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
 					credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-					serverUrl: 'https://10.10.10.24:6443') {
+					serverUrl: 'https://10.10.10.91:6443') {
 						sh "export IMAGE_TAG=${env.BUILD_NUMBER}"
 						sh "envsubst < deployment-service.yaml | kubectl apply -f -"
 					}
@@ -158,7 +159,7 @@ pipeline {
 			steps {
 				withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
 				credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-				serverUrl: 'https://10.10.10.24:6443') {
+				serverUrl: 'https://10.10.10.91:6443') {
 					sh "kubectl get pods -n webapps"
 					sh "kubectl get svc -n webapps"
 				}

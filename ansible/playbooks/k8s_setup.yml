@@ -262,22 +262,24 @@
       become: true
 
     - name: Get Jenkins token from Kubernetes secret
-      command: kubectl get secret mysecretname -n webapps -o jsonpath='{.data.token}' | base64 --decode
+      shell: |
+        kubectl get secret mysecretname -n webapps -o jsonpath='{.data.token}' | base64 --decode
       register: jenkins_token_output
       become: true
+
+    - name: Ensure the destination directory exists
+      file:
+        path: ../tmp
+        state: directory
+      delegate_to: localhost
+      become: false
 
     - name: Save Jenkins token to file
       copy:
         content: "{{ jenkins_token_output.stdout }}"
         dest: ../tmp/k8s_token
       delegate_to: localhost
-      become: true
-  
-
-    
-
-      
-
+      become: false
 
 # Task for joining worker nodes
 - hosts: k8s_workers
