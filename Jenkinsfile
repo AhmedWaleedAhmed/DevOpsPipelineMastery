@@ -148,9 +148,17 @@ pipeline {
 					withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
 					credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
 					serverUrl: 'https://10.10.10.91:6443') {
-						sh "export IMAGE_TAG=${env.BUILD_NUMBER}"
-						sh "envsubst < deployment-service.yaml | kubectl apply -f -"
+						sh "kubectl apply -f deployment-service.yaml"
 					}
+				}
+			}
+		}
+		stage('update the Deployment') {
+			steps {
+				withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
+				credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
+				serverUrl: 'https://10.10.10.91:6443') {
+					sh "kubectl set image deployment/boardgame-deployment boardgame=ahmedwaleed/boardgame:${env.BUILD_NUMBER}"
 				}
 			}
 		}
