@@ -147,7 +147,7 @@ pipeline {
 					//  here we just need to get the private ip and update this with it only.
 					withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
 					credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-					serverUrl: 'https://10.10.10.91:6443') {
+					serverUrl: 'https://10.10.10.36:6443') {
 						sh "kubectl apply -f deployment-service.yaml"
 					}
 				}
@@ -157,7 +157,7 @@ pipeline {
 			steps {
 				withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
 				credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-				serverUrl: 'https://10.10.10.91:6443') {
+				serverUrl: 'https://10.10.10.36:6443') {
 					sh "kubectl set image deployment/boardgame-deployment boardgame=ahmedwaleed/boardgame:${env.BUILD_NUMBER}"
 				}
 			}
@@ -167,7 +167,7 @@ pipeline {
 			steps {
 				withKubeConfig(caCertificate: '', clusterName: 'kubernetes', contextName: '',
 				credentialsId: 'k8-cred', namespace: 'webapps', restrictKubeConfigAccess: false,
-				serverUrl: 'https://10.10.10.91:6443') {
+				serverUrl: 'https://10.10.10.36:6443') {
 					sh "kubectl get pods -n webapps"
 					sh "kubectl get svc -n webapps"
 				}
