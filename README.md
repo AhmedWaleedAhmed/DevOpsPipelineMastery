@@ -18,12 +18,18 @@ With a fully automated CI/CD pipeline, the project streamlines code updates, con
 8. [Acknowledgments](#acknowledgments)
 
 ---
-
 ## Architecture
-![Architecture Diagram](images/architecture-diagram.png)
-- Diagram of the overall infrastructure (Kubernetes cluster, SonarQube, Nexus, Jenkins, etc.)
-- Description of the infrastructure components
 
+### Architecture Diagram Created with Draw.io
+![Architecture Diagram](images/architecture-diagram.svg)
+
+### Architecture Diagram Generated with Terraform Graph
+![Terraform Graph](images/terraform-graph.png)
+
+- Description of the infrastructure components
+---
+## Data Flow
+- Explain how data flows between components. For example, describe how Jenkins interacts with SonarQube for CI/CD, how Prometheus monitors the cluster, etc.
 ---
 
 ## Technology Stack
@@ -74,5 +80,5 @@ A brief summary of the project’s outcomes and potential future enhancements.
 
 ---
 
-## Acknowledgments
+## Steps to run the project
 Credits to any resources, libraries, or contributors that helped in the project.
