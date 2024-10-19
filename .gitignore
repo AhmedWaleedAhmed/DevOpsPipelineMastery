@@ -1,3 +1,4 @@
+ignore/*
 terraform/*
 !terraform/main.tf
 !terraform/data.tf
@@ -6,9 +7,3 @@ terraform/*
 !terraform/terraform.tfvars
 !terraform/outputs.tf
 !terraform/templates
-*.mp4
-*.tar.gz
-./docker-compose.yml
-./Dockerfile
-./step
-./trivy.sh
