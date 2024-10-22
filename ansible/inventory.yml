@@ -1,0 +1,30 @@
+all:
+  children:
+    k8s_cluster:
+      children:
+        k8s_master:
+          hosts:
+            master:
+              ansible_host: 3.71.77.96
+        k8s_workers:
+          hosts:
+            worker1:
+              ansible_host: 3.71.116.135
+            worker2:
+              ansible_host: 3.125.46.12
+    sonarqube:
+      hosts:
+        sonarqube:
+          ansible_host: 18.194.105.182
+    nexus:
+      hosts:
+        nexus:
+          ansible_host: 18.194.244.63
+    jenkins:
+      hosts:
+        jenkins:
+          ansible_host: 3.67.95.195
+    monitoring:
+      hosts:
+        monitoring:
+          ansible_host: 18.153.208.87
