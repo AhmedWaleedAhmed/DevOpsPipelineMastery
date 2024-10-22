@@ -1,7 +1,7 @@
-# Seamless CI/CD Pipeline Setup for Cloud Applications
+# Automated CI/CD Pipeline for Cloud Infrastructure
 
 ## Introduction
-__Seamless CI/CD Pipeline Setup for Cloud Applications__ automates the creation and configuration of cloud infrastructure using Terraform and Ansible. This project sets up a Kubernetes cluster and integrates key DevOps tools like SonarQube, Nexus, Jenkins, Prometheus, and Grafana.
+__Automated CI/CD Pipeline for Cloud Infrastructure__ automates the creation and configuration of cloud infrastructure using Terraform and Ansible. This project sets up a Kubernetes cluster and integrates key DevOps tools like SonarQube, Nexus, Jenkins, Prometheus, and Grafana.
 
 With a fully automated CI/CD pipeline, the project streamlines code updates, continuous testing, and real-time monitoring, ensuring efficient and reliable deployments. This setup enables teams to manage infrastructure as code, promoting rapid application delivery and scalability in cloud environments.
 
